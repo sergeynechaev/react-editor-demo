@@ -1,4 +1,5 @@
 import * as React from 'react';
+import * as style from './style.css';
 import { ContentModel } from 'app/models';
 import { ContentActions } from 'app/actions/content.actions';
 import { DraggableData, Position, ResizableDelta, Rnd } from 'react-rnd';
@@ -12,14 +13,6 @@ export namespace EditorContentItem {
 
   export type ResizableDirection = 'top' | 'right' | 'bottom' | 'left' | 'topRight' | 'bottomRight' | 'bottomLeft' | 'topLeft';
 }
-
-const style = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  border: 'solid 1px #ddd',
-  background: '#f0f0f0'
-};
 
 export class EditorContentItem extends React.Component<EditorContentItem.Props> {
   constructor(props: EditorContentItem.Props, context?: any) {
@@ -65,7 +58,7 @@ export class EditorContentItem extends React.Component<EditorContentItem.Props> 
     return (
       <Rnd
         key={item.id}
-        style={style}
+        className={style.rndContainer}
         size={{ width: item.width, height: item.height }}
         position={{ x: item.position.x, y: item.position.y }}
         lockAspectRatio={true}
@@ -82,7 +75,12 @@ export class EditorContentItem extends React.Component<EditorContentItem.Props> 
         onDragStop={this.onDragStop}
         onResize={this.onResize}
       >
-        <div style={imageContainerStyle}/>
+        <div style={imageContainerStyle}>
+          <span className={style.pointNE}/>
+          <span className={style.pointNW}/>
+          <span className={style.pointSE}/>
+          <span className={style.pointSW}/>
+        </div>
       </Rnd>
     );
 
