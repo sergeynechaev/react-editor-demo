@@ -36,6 +36,12 @@ export const contentReducer = handleActions<RootState.ContentState, ContentModel
       return state;
     },
 
+    [ContentActions.Type.REMOVE]: (state, action) => {
+      return !action.payload || !action.payload.id
+        ? state
+        : state.filter(item => item.id !== action.payload.id);
+    },
+
     [ContentActions.Type.MOVE]: (state, action) => {
       if (!action.payload || !action.payload.id || !action.payload.position) {
         return state;

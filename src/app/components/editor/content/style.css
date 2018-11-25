@@ -43,3 +43,20 @@
     box-sizing: content-box;
     display: block;
 }
+
+.rndContainer .remove {
+    position: absolute;
+    width: 25px;
+    height: 30px;
+    top: -5px;
+    right: -25px;
+    cursor: pointer;
+    display: none;
+    color: #aaa;
+}
+.rndContainer:hover .remove {
+    display: block;
+}
+.rndContainer:hover .remove:hover {
+    color: #000;
+}

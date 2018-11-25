@@ -149,6 +149,11 @@ export class Editor extends React.Component<Editor.Props, Editor.State> {
     return this.props.actions.resize(params);
   };
 
+  onItemRemove: typeof ContentActions.remove = (params) => {
+    this.setState({ isSaved: this.props.content.length === 1 });
+    return this.props.actions.remove(params);
+  };
+
   save = () => {
     // todo: save all content data on a server
     this.setState({ isSaved: true });
@@ -198,13 +203,14 @@ export class Editor extends React.Component<Editor.Props, Editor.State> {
 
   render() {
     const { content } = this.props;
-    const { menuEl, videoDialogOpen, videoUrl } = this.state;
+    const { menuEl, videoDialogOpen, videoUrl, isSaved } = this.state;
 
     return (
       <div>
         <div className={style.container}>
           <EditorContentArea
             items={content}
+            remove={this.onItemRemove}
             move={this.onItemMove}
             resize={this.onItemResize}
             getSize={this.getEditorSize}
@@ -255,12 +261,12 @@ export class Editor extends React.Component<Editor.Props, Editor.State> {
           </Dialog>
 
           <div className={style.status}>
-            <Badge color="secondary" badgeContent={'!'} invisible={this.state.isSaved}>
-              <div className={[style.statusText, this.state.isSaved ? style.saved : ''].join(' ')}>
-                {this.state.isSaved ? 'All data saved' : 'You have unsaved changes'}
+            <Badge color="secondary" badgeContent={'!'} invisible={isSaved}>
+              <div className={[style.statusText, isSaved ? style.saved : ''].join(' ')}>
+                {isSaved ? 'All data saved' : 'You have unsaved changes'}
               </div>
             </Badge>
-            {!this.state.isSaved &&
+            {!isSaved &&
             <div>
               <Button onClick={this.save}>Save</Button>
             </div>

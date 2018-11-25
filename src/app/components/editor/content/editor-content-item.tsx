@@ -1,12 +1,17 @@
 import * as React from 'react';
+import { DraggableData, Position, ResizableDelta, Rnd } from 'react-rnd';
+
+import CloseIcon from '@material-ui/icons/Close';
+import Tooltip from '@material-ui/core/Tooltip';
+
 import * as style from './style.css';
 import { ContentModel } from 'app/models';
 import { ContentActions } from 'app/actions/content.actions';
-import { DraggableData, Position, ResizableDelta, Rnd } from 'react-rnd';
 
 export namespace EditorContentItem {
   export interface Props {
     item: ContentModel;
+    remove: typeof ContentActions.remove;
     move: typeof ContentActions.move;
     resize: typeof ContentActions.resize;
   }
@@ -45,6 +50,13 @@ export class EditorContentItem extends React.Component<EditorContentItem.Props> 
     });
   };
 
+  onRemove = () => {
+    const { item } = this.props;
+    this.props.remove({
+      id: item.id,
+    });
+  };
+
   render() {
     const { item } = this.props;
 
@@ -80,6 +92,11 @@ export class EditorContentItem extends React.Component<EditorContentItem.Props> 
           <span className={style.pointNW}/>
           <span className={style.pointSE}/>
           <span className={style.pointSW}/>
+          <span className={style.remove} onClick={this.onRemove}>
+            <Tooltip title="Remove permanently" enterDelay={300} leaveDelay={0}>
+              <CloseIcon/>
+            </Tooltip>
+          </span>
         </div>
       </Rnd>
     );

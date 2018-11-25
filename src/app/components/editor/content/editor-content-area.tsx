@@ -6,6 +6,7 @@ import { EditorContentItem } from './editor-content-item';
 export namespace EditorContentArea {
   export interface Props {
     items: ContentModel[];
+    remove: typeof ContentActions.remove;
     move: typeof ContentActions.move;
     resize: typeof ContentActions.resize;
     getSize: (size: ClientRect | DOMRect) => void
@@ -20,13 +21,14 @@ export class EditorContentArea extends React.Component<EditorContentArea.Props> 
   };
 
   render() {
-    const { items, move, resize } = this.props;
+    const { items, remove, move, resize } = this.props;
     return (
       <div ref={this.refCallback}>
         {items.map((item) => (
           <EditorContentItem
             key={item.id}
             item={item}
+            remove={remove}
             move={move}
             resize={resize}
           />
