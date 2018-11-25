@@ -4,6 +4,8 @@ html,
 body {
     margin: 0;
     padding: 0;
+    height: 100%;
+    width: 100%;
 }
 
 button, input {
@@ -30,27 +32,40 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: space-around;
-    background: #e4e4e4;
-    color: #4d4d4d;
-    height: 80px;
-    width: 300px;
     position: fixed;
-    bottom: 0;
-    top: 0;
-    border: 1px solid #aaa;
-    border-radius: 4px;
-    padding: 10px;
-    margin: 5px;
+    left: 20px;
+    top: 20px;
 }
 
-.controls input[type=file] {
+.hidden {
     display: none;
 }
 
-.controls input,
-.controls button {
-    margin: 5px;
+.status {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    position: fixed;
+    right: 30px;
+    top: 40px;
 }
 
-.status {
+.statusText {
+    padding: 0 17px;
+    font-size: 13px;
+}
+
+.statusText.saved {
+    color: #aaa;
+}
+
+.empty {
+    display: flex;
+    justify-content: center;
+}
+.empty h1 {
+    font-size: 40px;
+    max-width: 500px;
+    color: #aaa;
+    line-height: 45px;
 }

@@ -3,32 +3,7 @@ import { RootState } from './state';
 import { ContentModel } from 'app/models';
 import { ContentActions } from 'app/actions/content.actions';
 
-const initialState: RootState.ContentState = [
-  // {
-  //   id: 1,
-  //   type: ContentModel.Type.IMAGE,
-  //   previewUrl: '/some/path',
-  //   data: '',
-  //   width: 100,
-  //   height: 100,
-  //   position: {
-  //     x: 100,
-  //     y: 100
-  //   }
-  // },
-  // {
-  //   id: 2,
-  //   type: ContentModel.Type.VIDEO,
-  //   previewUrl: '/some/path/2',
-  //   data: '',
-  //   width: 100,
-  //   height: 100,
-  //   position: {
-  //     x: 200,
-  //     y: 200
-  //   }
-  // }
-];
+const initialState: RootState.ContentState = [];
 
 export const contentReducer = handleActions<RootState.ContentState, ContentModel>(
   {

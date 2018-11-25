@@ -1,4 +1,18 @@
 import * as React from 'react';
+
+import Button from '@material-ui/core/Button';
+import AddIcon from '@material-ui/icons/Add';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
+import Tooltip from '@material-ui/core/Tooltip';
+import TextField from '@material-ui/core/TextField';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import Badge from '@material-ui/core/Badge';
+
 import * as style from './style.css';
 import { RouteComponentProps } from 'react-router';
 import { RootState } from 'app/reducers';
@@ -9,7 +23,7 @@ import { bindActionCreators, Dispatch } from 'redux';
 import { EditorContentArea } from 'app/components/editor/content';
 import { ContentModel } from 'app/models';
 import { ChangeEvent, RefObject } from 'react';
-import { InputText } from 'app/components/common/input-text/input-text.component';
+
 
 export namespace Editor {
   export interface Props extends RouteComponentProps<void> {
@@ -19,7 +33,9 @@ export namespace Editor {
 
   export interface State {
     isSaved: boolean;
-    mode: 'image' | 'video' | ''
+    menuEl: HTMLElement;
+    videoDialogOpen: boolean;
+    videoUrl: string;
   }
 }
 
@@ -30,6 +46,7 @@ export enum ThumbnailTypes {
   standard = 'sddefault',   // 640x480
   maximum = 'maxresdefault' // 1280x720
 }
+
 
 @connect(
   (state: RootState, ownProps): Pick<Editor.Props, 'content'> => {
@@ -51,9 +68,13 @@ export class Editor extends React.Component<Editor.Props, Editor.State> {
 
     this.state = {
       isSaved: true,
-      mode: ''
+      menuEl: null,
+      videoDialogOpen: false,
+      videoUrl: ''
     };
   }
+  
+  // Helpers
 
   // todo: move to utils
   getVideoId(url: string) {
@@ -63,14 +84,19 @@ export class Editor extends React.Component<Editor.Props, Editor.State> {
       : url.split('/').pop();
   };
 
+  getEditorSize = (size: ClientRect | DOMRect) => {
+    this.editorSize = size;
+  };
+
+  // Content handlers
+
   addContent = (type: ContentModel.Type, previewUrl: string, data: string, width: number, height: number) => {
-    this.props.actions.add({ type, data, previewUrl, width, height, options: {editorSize: this.editorSize} });
+    this.props.actions.add({ type, data, previewUrl, width, height, options: { editorSize: this.editorSize } });
     this.setState({ isSaved: false });
 
     // scroll to the bottom, but yep, it's a pretty simple trick
     // todo: get the last added element by ref and scroll into view of it?
-    const scrollTo = this.props.content.reduce((val, item) => val + item.height, 0);
-    window.scrollTo(0, scrollTo + height)
+    if (this.props.content[0]) window.scrollTo(0, this.props.content[0].position.y);
   };
 
   addImage = (event: ChangeEvent<HTMLInputElement>) => {
@@ -99,7 +125,6 @@ export class Editor extends React.Component<Editor.Props, Editor.State> {
 
   addVideo = (url: string) => {
     if (!url) {
-      this.onCancelClick();
       return;
     }
 
@@ -114,10 +139,6 @@ export class Editor extends React.Component<Editor.Props, Editor.State> {
     img.src = imageURL;
   };
 
-  getEditorSize = (size: ClientRect | DOMRect) => {
-    this.editorSize = size
-  };
-
   onItemMove: typeof ContentActions.move = (params) => {
     this.setState({ isSaved: false });
     return this.props.actions.move(params);
@@ -130,55 +151,132 @@ export class Editor extends React.Component<Editor.Props, Editor.State> {
 
   save = () => {
     // todo: save all content data on a server
-    this.setState({ isSaved: true })
+    this.setState({ isSaved: true });
   };
+
+  // Interface handlers
 
   onAddImageClick = () => {
     this.uploadImageRef.current.click();
+    this.setState({ menuEl: null });
   };
 
   onAddVideoClick = () => {
-    this.setState({mode: 'video'})
+    this.setState({
+      videoDialogOpen: true,
+      menuEl: null
+    });
   };
 
-  onCancelClick = () => {
-    this.setState({mode: ''})
+  onMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    this.setState({ menuEl: event.currentTarget });
   };
+
+  onMenuClose = () => {
+    this.setState({ menuEl: null });
+  };
+
+  onVideoDialogClose = () => {
+    this.setState({ videoDialogOpen: false });
+  };
+
+  onVideoDialogAdd = () => {
+    if (this.state.videoUrl) {
+      this.addVideo(this.state.videoUrl);
+    }
+    this.setState({
+      videoUrl: '',
+      videoDialogOpen: false
+    });
+  };
+
+  onVideoUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
+    this.setState({ videoUrl: event.target.value });
+  };
+
+  // Render
 
   render() {
     const { content } = this.props;
+    const { menuEl, videoDialogOpen, videoUrl } = this.state;
 
     return (
-      <div className={style.container}>
-        <EditorContentArea
-          items={content}
-          move={this.onItemMove}
-          resize={this.onItemResize}
-          getSize={this.getEditorSize}
-        />
-        <div className={style.controls}>
+      <div>
+        <div className={style.container}>
+          <EditorContentArea
+            items={content}
+            move={this.onItemMove}
+            resize={this.onItemResize}
+            getSize={this.getEditorSize}
+          />
+
+          <div className={style.controls}>
+            <Tooltip title="Add a new image or video" enterDelay={500} leaveDelay={0}>
+              <Button
+                variant="fab"
+                color="primary"
+                aria-label="Add"
+                aria-haspopup="true"
+                onClick={this.onMenuOpen}
+              >
+                <AddIcon/>
+              </Button>
+            </Tooltip>
+            <Menu
+              id="add-menu"
+              anchorEl={menuEl}
+              open={Boolean(menuEl)}
+              onClose={this.onMenuClose}
+            >
+              <MenuItem onClick={this.onAddImageClick}>Add a new image</MenuItem>
+              <MenuItem onClick={this.onAddVideoClick}>Add YouTube video</MenuItem>
+            </Menu>
+          </div>
+
+          {/* todo: move dialog to external component */}
+          <Dialog open={videoDialogOpen} onClose={this.onVideoDialogClose}>
+            <DialogTitle id="form-dialog-title">Add YouTube video</DialogTitle>
+            <DialogContent>
+              <DialogContentText>Please copy and paste a link to YouTube video.</DialogContentText>
+              <TextField
+                autoFocus
+                margin="dense"
+                id="video"
+                label="Enter link"
+                value={videoUrl}
+                onChange={this.onVideoUrlChange}
+                fullWidth
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={this.onVideoDialogClose} color="primary">Cancel</Button>
+              <Button onClick={this.onVideoDialogAdd} color="primary">Add</Button>
+            </DialogActions>
+          </Dialog>
+
           <div className={style.status}>
-            <span>Status: {this.state.isSaved ? 'Saved' : 'You have unsaved changes'}</span>
-            {!this.state.isSaved && <button onClick={this.save}>Save</button>}
+            <Badge color="secondary" badgeContent={'!'} invisible={this.state.isSaved}>
+              <div className={[style.statusText, this.state.isSaved ? style.saved : ''].join(' ')}>
+                {this.state.isSaved ? 'All data saved' : 'You have unsaved changes'}
+              </div>
+            </Badge>
+            {!this.state.isSaved &&
+            <div>
+              <Button onClick={this.save}>Save</Button>
+            </div>
+            }
+
           </div>
 
-          {this.state.mode !== 'video' &&
-          <div>
-            <span>Add: </span>
-            <button onClick={this.onAddImageClick}>Image</button>
-            <button onClick={this.onAddVideoClick}>Video</button>
-            <input ref={this.uploadImageRef} type="file" onChange={this.addImage}/>
-          </div>
-          }
-
-          {this.state.mode === 'video' &&
-          <div>
-            <InputText onSave={this.addVideo}/>
-            <button onClick={this.onCancelClick}>Cancel</button>
-          </div>
-          }
-
+          <input className={style.hidden} ref={this.uploadImageRef} type="file" onChange={this.addImage}/>
         </div>
+
+        {!content.length &&
+        <div className={style.empty}>
+          <h1>It seems that there is nothing here yet. Feel free to add some images or video content using the Big Blue button.</h1>
+        </div>
+        }
+
       </div>
     );
   }
