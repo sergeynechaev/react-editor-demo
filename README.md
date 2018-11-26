@@ -1,6 +1,6 @@
 # React Editor Demo
 
-Практическое решение тестовой задачи.
+Демо-версия: [react-editor-demo](https://sergeynechaev.github.io/react-editor-demo/)
 
 ## Задача
 
