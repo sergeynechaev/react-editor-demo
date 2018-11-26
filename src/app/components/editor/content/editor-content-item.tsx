@@ -88,10 +88,10 @@ export class EditorContentItem extends React.Component<EditorContentItem.Props> 
         onResize={this.onResize}
       >
         <div style={imageContainerStyle}>
-          <span className={style.pointNE}/>
-          <span className={style.pointNW}/>
-          <span className={style.pointSE}/>
-          <span className={style.pointSW}/>
+          <span className={[style.point, style.pointNE].join(' ')}/>
+          <span className={[style.point, style.pointNW].join(' ')}/>
+          <span className={[style.point, style.pointSE].join(' ')}/>
+          <span className={[style.point, style.pointSW].join(' ')}/>
           <span className={style.remove} onClick={this.onRemove}>
             <Tooltip title="Remove permanently" enterDelay={300} leaveDelay={0}>
               <CloseIcon/>

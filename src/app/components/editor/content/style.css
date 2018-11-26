@@ -10,7 +10,7 @@
     outline-color: rgba(51, 153, 255, 0.75);
 }
 
-.rndContainer span[class^=point] {
+.rndContainer .point {
     position: absolute;
     width: 5px;
     height: 5px;
