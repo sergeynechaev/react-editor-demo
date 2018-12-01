@@ -1,20 +1,10 @@
 import { handleActions } from 'redux-actions';
-import { RootState } from './state';
+import { RootState } from 'app/reducers';
 import { EditorModel } from 'app/models';
-import { EditorActions } from 'app/actions/editor.actions';
-import reduceReducer from 'reduce-reducers';
+import { EditorActions } from 'app/actions';
+import { initialState } from './editor-initial-state';
 
-const initialState: RootState.EditorState = {
-    content: [],
-    options: {},
-    ui: {
-      isReady: false,
-      isDirty: false,
-      isSaved: true
-    }
-};
-
-const editorContentReducer = handleActions<RootState.EditorState, EditorModel.Content>(
+export const editorContentReducer = handleActions<RootState.EditorState, EditorModel.Content>(
   {
 
     [EditorActions.Type.ADD_CONTENT]: (state, action) => {
@@ -46,8 +36,7 @@ const editorContentReducer = handleActions<RootState.EditorState, EditorModel.Co
           ],
           ui: {
             ...ui,
-            isDirty: true,
-            isSaved: false
+            isDirty: true
           }
         };
       }
@@ -64,8 +53,7 @@ const editorContentReducer = handleActions<RootState.EditorState, EditorModel.Co
           content: content.filter(item => item.id !== id),
           ui: {
             ...ui,
-            isDirty: true,
-            isSaved: false
+            isDirty: true
           }
         }
     },
@@ -87,8 +75,7 @@ const editorContentReducer = handleActions<RootState.EditorState, EditorModel.Co
         }),
         ui: {
           ...ui,
-          isDirty: true,
-          isSaved: false
+          isDirty: true
         }
       };
     },
@@ -112,84 +99,12 @@ const editorContentReducer = handleActions<RootState.EditorState, EditorModel.Co
         }),
         ui: {
           ...ui,
-          isDirty: true,
-          isSaved: false
+          isDirty: true
         }
       };
     },
 
   },
-  initialState
-);
 
-const editorUiReducer = handleActions<RootState.EditorState, EditorModel.Ui>(
-  {
-
-    [EditorActions.Type.SET_SAVED]: (state) => {
-      const { ui } = state;
-      return {
-        ...state,
-        ui: {
-          ...ui,
-          isDirty: false,
-          isSaved: true
-        }
-      }
-    },
-
-    [EditorActions.Type.SET_DIRTY]: (state) => {
-      const { ui } = state;
-      return {
-        ...state,
-        ui: {
-          ...ui,
-          isDirty: true,
-          isSaved: false
-        }
-      }
-    },
-
-    [EditorActions.Type.SET_READY]: (state) => {
-      const { ui } = state;
-      return {
-        ...state,
-        ui: {
-          ...ui,
-          isReady: true
-        }
-      }
-    }
-
-  },
-  initialState
-);
-
-const editorOptionsReducer = handleActions<RootState.EditorState, EditorModel.Options>(
-  {
-
-    [EditorActions.Type.SET_EDITOR_SIZE]: (state, action) => {
-      const { editorSize } = action.payload;
-      const { options } = state;
-      if (!editorSize) {
-        return state;
-      }
-      return {
-        ...state,
-        options: {
-          ...options,
-          editorSize,
-        }
-      }
-    },
-
-  },
-  initialState
-);
-
-// reduce reducers to share initial state
-export const editorReducer = reduceReducer<RootState.EditorState>(
-  editorContentReducer,
-  editorUiReducer,
-  editorOptionsReducer,
   initialState
 );

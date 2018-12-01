@@ -148,7 +148,8 @@ export class Editor extends React.Component<Editor.Props, Editor.State> {
 
   save = () => {
     // todo: save all content data on a server
-    this.props.actions.setSaved();
+    this.props.actions.save(this.props.editor.content);
+    // this.props.actions.setSaved();
   };
 
   // Interface handlers
@@ -253,12 +254,15 @@ export class Editor extends React.Component<Editor.Props, Editor.State> {
           </Dialog>
 
           <div className={style.status}>
-            <Badge color="secondary" badgeContent={'!'} invisible={editor.ui.isSaved}>
-              <div className={[style.statusText, editor.ui.isSaved ? style.saved : ''].join(' ')}>
-                {editor.ui.isSaved ? 'All data saved' : 'You have unsaved changes'}
+            <Badge color="secondary" badgeContent={'!'} invisible={!editor.ui.isDirty}>
+              <div className={[style.statusText, editor.ui.isDirty ? '' : style.saved].join(' ')}>
+                {editor.ui.isSaving
+                  ? <span>Saving...</span>
+                  : <span>{editor.ui.isDirty ? 'You have unsaved changes' : 'All data saved'}</span>
+                }
               </div>
             </Badge>
-            {!editor.ui.isSaved &&
+            {editor.ui.isDirty && !editor.ui.isSaving &&
             <div>
               <Button onClick={this.save}>Save</Button>
             </div>

@@ -1,10 +1,13 @@
 import { Store, createStore, applyMiddleware } from 'redux';
 import { composeWithDevTools } from 'redux-devtools-extension';
+import { createEpicMiddleware } from 'redux-observable';
 import { logger } from 'app/middleware';
-import { RootState, rootReducer } from 'app/reducers';
+import { RootState, rootReducer, rootEpic } from 'app/reducers';
+
+const epicMiddleware = createEpicMiddleware();
 
 export function configureStore(initialState?: RootState): Store<RootState> {
-  let middleware = applyMiddleware(logger);
+  let middleware = applyMiddleware(logger, epicMiddleware);
 
   if (process.env.NODE_ENV !== 'production') {
     middleware = composeWithDevTools(middleware);
@@ -18,6 +21,8 @@ export function configureStore(initialState?: RootState): Store<RootState> {
       store.replaceReducer(nextReducer);
     });
   }
+
+  epicMiddleware.run(rootEpic);
 
   return store;
 }
