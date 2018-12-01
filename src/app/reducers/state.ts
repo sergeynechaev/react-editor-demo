@@ -1,10 +1,10 @@
-import { ContentModel } from 'app/models';
+import { EditorModel } from 'app/models';
 
 export interface RootState {
-  content: RootState.ContentState;
+  editor: RootState.EditorState;
   router?: any;
 }
 
 export namespace RootState {
-  export type ContentState = ContentModel[];
+  export type EditorState = EditorModel;
 }

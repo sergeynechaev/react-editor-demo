@@ -1,1 +1,1 @@
-export * from './content.model';
+export * from './editor';

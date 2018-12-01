@@ -1,1 +1,1 @@
-export * from './content.actions';
+export * from './editor.actions';

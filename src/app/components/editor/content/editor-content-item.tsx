@@ -5,15 +5,15 @@ import CloseIcon from '@material-ui/icons/Close';
 import Tooltip from '@material-ui/core/Tooltip';
 
 import * as style from './style.css';
-import { ContentModel } from 'app/models';
-import { ContentActions } from 'app/actions/content.actions';
+import { EditorContent } from 'app/models';
+import { EditorActions } from 'app/actions/editor.actions';
 
 export namespace EditorContentItem {
   export interface Props {
-    item: ContentModel;
-    remove: typeof ContentActions.remove;
-    move: typeof ContentActions.move;
-    resize: typeof ContentActions.resize;
+    item: EditorContent;
+    remove: typeof EditorActions.removeContent;
+    move: typeof EditorActions.moveContent;
+    resize: typeof EditorActions.resizeContent;
   }
 
   export type ResizableDirection = 'top' | 'right' | 'bottom' | 'left' | 'topRight' | 'bottomRight' | 'bottomLeft' | 'topLeft';

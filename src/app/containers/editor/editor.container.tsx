@@ -16,23 +16,22 @@ import Badge from '@material-ui/core/Badge';
 import * as style from './style.css';
 import { RouteComponentProps } from 'react-router';
 import { RootState } from 'app/reducers';
-import { ContentActions } from 'app/actions/content.actions';
+import { EditorActions } from 'app/actions/editor.actions';
 import { connect } from 'react-redux';
 import { omit } from 'app/utils';
 import { bindActionCreators, Dispatch } from 'redux';
 import { EditorContentArea } from 'app/components/editor/content';
-import { ContentModel } from 'app/models';
+import { EditorContent } from 'app/models';
 import { ChangeEvent, RefObject } from 'react';
 
 
 export namespace Editor {
   export interface Props extends RouteComponentProps<void> {
-    content: RootState.ContentState;
-    actions: ContentActions;
+    editor: RootState.EditorState;
+    actions: EditorActions;
   }
 
   export interface State {
-    isSaved: boolean;
     menuEl: HTMLElement;
     videoDialogOpen: boolean;
     videoUrl: string;
@@ -49,31 +48,28 @@ export enum ThumbnailTypes {
 
 
 @connect(
-  (state: RootState, ownProps): Pick<Editor.Props, 'content'> => {
-    return { content: state.content };
+  (state: RootState, ownProps): Pick<Editor.Props, 'editor'> => {
+    return { editor: state.editor };
   },
   (dispatch: Dispatch): Pick<Editor.Props, 'actions'> => ({
-    actions: bindActionCreators(omit(ContentActions, 'Type'), dispatch)
+    actions: bindActionCreators(omit(EditorActions, 'Type'), dispatch)
   })
 )
 export class Editor extends React.Component<Editor.Props, Editor.State> {
 
   uploadImageRef: RefObject<HTMLInputElement>;
-  editorSize: ClientRect | DOMRect;
 
   constructor(props: Editor.Props, context?: any) {
     super(props, context);
 
     this.uploadImageRef = React.createRef();
-
     this.state = {
-      isSaved: true,
       menuEl: null,
       videoDialogOpen: false,
       videoUrl: ''
     };
   }
-  
+
   // Helpers
 
   // todo: move to utils
@@ -84,19 +80,18 @@ export class Editor extends React.Component<Editor.Props, Editor.State> {
       : url.split('/').pop();
   };
 
-  getEditorSize = (size: ClientRect | DOMRect) => {
-    this.editorSize = size;
+  onGetEditorSize = (editorSize: ClientRect | DOMRect) => {
+    this.props.actions.setEditorSize({editorSize});
+    this.props.actions.setReady();
   };
 
   // Content handlers
 
-  addContent = (type: ContentModel.Type, previewUrl: string, data: string, width: number, height: number) => {
-    this.props.actions.add({ type, data, previewUrl, width, height, options: { editorSize: this.editorSize } });
-    this.setState({ isSaved: false });
-
+  addContent = (type: EditorContent.Type, previewUrl: string, data: string, width: number, height: number) => {
+    this.props.actions.addContent({ type, data, previewUrl, width, height});
     // scroll to the bottom, but yep, it's a pretty simple trick
     // todo: get the last added element by ref and scroll into view of it?
-    if (this.props.content[0]) window.scrollTo(0, this.props.content[0].position.y);
+    if (this.props.editor.content[0]) window.scrollTo(0, this.props.editor.content[0].position.y);
   };
 
   addImage = (event: ChangeEvent<HTMLInputElement>) => {
@@ -114,7 +109,7 @@ export class Editor extends React.Component<Editor.Props, Editor.State> {
       reader.readAsDataURL(file);
       reader.onload = () => {   // read base64 string
         const data = reader.result.toString();
-        addContent(ContentModel.Type.IMAGE, data, data, img.width, img.height);
+        addContent(EditorContent.Type.IMAGE, data, data, img.width, img.height);
         URL.revokeObjectURL(img.src); // cleanup memory
         uploadImageRef.current.value = '';  // cleanup file input
       };
@@ -134,29 +129,26 @@ export class Editor extends React.Component<Editor.Props, Editor.State> {
 
     const img = new Image();
     img.onload = () => {
-      addContent(ContentModel.Type.VIDEO, imageURL, url, img.width, img.height);
+      addContent(EditorContent.Type.VIDEO, imageURL, url, img.width, img.height);
     };
     img.src = imageURL;
   };
 
-  onItemMove: typeof ContentActions.move = (params) => {
-    this.setState({ isSaved: false });
-    return this.props.actions.move(params);
+  onItemMove: typeof EditorActions.moveContent = (params) => {
+    return this.props.actions.moveContent(params);
   };
 
-  onItemResize: typeof ContentActions.resize = (params) => {
-    this.setState({ isSaved: false });
-    return this.props.actions.resize(params);
+  onItemResize: typeof EditorActions.resizeContent = (params) => {
+    return this.props.actions.resizeContent(params);
   };
 
-  onItemRemove: typeof ContentActions.remove = (params) => {
-    this.setState({ isSaved: this.props.content.length === 1 });
-    return this.props.actions.remove(params);
+  onItemRemove: typeof EditorActions.removeContent = (params) => {
+    return this.props.actions.removeContent(params);
   };
 
   save = () => {
     // todo: save all content data on a server
-    this.setState({ isSaved: true });
+    this.props.actions.setSaved();
   };
 
   // Interface handlers
@@ -202,18 +194,18 @@ export class Editor extends React.Component<Editor.Props, Editor.State> {
   // Render
 
   render() {
-    const { content } = this.props;
-    const { menuEl, videoDialogOpen, videoUrl, isSaved } = this.state;
+    const { editor } = this.props;
+    const { menuEl, videoDialogOpen, videoUrl } = this.state;
 
     return (
       <div>
         <div className={style.container}>
           <EditorContentArea
-            items={content}
+            items={editor.content}
             remove={this.onItemRemove}
             move={this.onItemMove}
             resize={this.onItemResize}
-            getSize={this.getEditorSize}
+            getSize={this.onGetEditorSize}
           />
 
           <div className={style.controls}>
@@ -261,12 +253,12 @@ export class Editor extends React.Component<Editor.Props, Editor.State> {
           </Dialog>
 
           <div className={style.status}>
-            <Badge color="secondary" badgeContent={'!'} invisible={isSaved}>
-              <div className={[style.statusText, isSaved ? style.saved : ''].join(' ')}>
-                {isSaved ? 'All data saved' : 'You have unsaved changes'}
+            <Badge color="secondary" badgeContent={'!'} invisible={editor.ui.isSaved}>
+              <div className={[style.statusText, editor.ui.isSaved ? style.saved : ''].join(' ')}>
+                {editor.ui.isSaved ? 'All data saved' : 'You have unsaved changes'}
               </div>
             </Badge>
-            {!isSaved &&
+            {!editor.ui.isSaved &&
             <div>
               <Button onClick={this.save}>Save</Button>
             </div>
@@ -277,10 +269,16 @@ export class Editor extends React.Component<Editor.Props, Editor.State> {
           <input className={style.hidden} ref={this.uploadImageRef} type="file" onChange={this.addImage}/>
         </div>
 
-        {!content.length &&
+        {!editor.content.length && editor.ui.isReady &&
         <div className={style.empty}>
           <h1>It seems that there is nothing here yet. Feel free to add some images or video content using the Big Blue button.</h1>
         </div>
+        }
+
+        {!editor.ui.isReady &&
+        <div className={style.empty}>
+          <h1>Loading...</h1>
+          </div>
         }
 
       </div>

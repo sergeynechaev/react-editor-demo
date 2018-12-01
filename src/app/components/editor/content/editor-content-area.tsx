@@ -1,14 +1,14 @@
 import * as React from 'react';
-import { ContentModel } from 'app/models';
-import { ContentActions } from 'app/actions/content.actions';
+import { EditorContent } from 'app/models';
+import { EditorActions } from 'app/actions/editor.actions';
 import { EditorContentItem } from './editor-content-item';
 
 export namespace EditorContentArea {
   export interface Props {
-    items: ContentModel[];
-    remove: typeof ContentActions.remove;
-    move: typeof ContentActions.move;
-    resize: typeof ContentActions.resize;
+    items: EditorContent[];
+    remove: typeof EditorActions.removeContent;
+    move: typeof EditorActions.moveContent;
+    resize: typeof EditorActions.resizeContent;
     getSize: (size: ClientRect | DOMRect) => void
   }
 }

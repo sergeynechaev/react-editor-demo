@@ -1,17 +1,14 @@
-export interface ContentModel {
+export interface EditorContent {
   id: number;
-  type: ContentModel.Type;
+  type: EditorContent.Type;
   previewUrl: string; // base64 for image, video thumbnail for video
   data: string;       // base64 for image, video url for video
   width: number;
   height: number;
-  position: ContentModel.Coordinates;
-  options?: {
-    editorSize?:  ClientRect | DOMRect
-  }
+  position: EditorContent.Coordinates;
 }
 
-export namespace ContentModel {
+export namespace EditorContent {
   export enum Type {
     IMAGE = 'image',
     VIDEO = 'video'
